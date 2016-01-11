@@ -1,9 +1,9 @@
-/************************************************
+п»ї/************************************************
 * RU:
-* Ѓиблиотека длЯ работы с 23K256 Microchip (c)
+* Р‘РёР±Р»РёРѕС‚РµРєР° РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ 23K256 Microchip (c)
 * SRAM - 256 kBit = 32 768 * 8 bite
 * 1024 Pages x 32 byte = 32 768 byts
-* ‘вЯзатьсЯ со мной -
+* РЎРІСЏР·Р°С‚СЊСЃСЏ СЃРѕ РјРЅРѕР№ -
 * E-mail: voloh@land.ru
 ************************************************/
 /************************************************
@@ -15,7 +15,7 @@
 * E-mail: voloh@land.ru
 ************************************************/
 
-// ‘писок команд
+// РЎРїРёСЃРѕРє РєРѕРјР°РЅРґ
 // EN: Command list
 // Read data from memory array beginning at selected address
 #define OPT_READ 0b00000011
@@ -26,7 +26,7 @@
 // Write STATUS register
 #define OPT_WRSR 0b00000001
 
-// —тение статус регистра
+// Р§С‚РµРЅРёРµ СЃС‚Р°С‚СѓСЃ СЂРµРіРёСЃС‚СЂР°
 // EN: Read status register
 //  7 | 6 | 5 | 4 | 3 | 2 | 1 | 0
 // --------------------------------
@@ -51,7 +51,7 @@ int8 ext_sram_status_register_read(void)
    return data;
 }
 
-// ‡апись статус регистра
+// Р—Р°РїРёСЃСЊ СЃС‚Р°С‚СѓСЃ СЂРµРіРёСЃС‚СЂР°
 // EN: Write status register
 //  7 | 6 | 5 | 4 | 3 | 2 | 1 | 0
 // --------------------------------
@@ -73,28 +73,28 @@ void ext_sram_status_register_write(int8 data)
    SPI_DESELECT(SPI_CS_SRAM);
 }
 
-// ‚ключает Byte mode - 32 768 байт
+// Р’РєР»СЋС‡Р°РµС‚ Byte mode - 32 768 Р±Р°Р№С‚
 // EN: Byte mode On - 32 768 bytes
 void ext_sram_set_byte_mode(void)
 {
    ext_sram_status_register_write(0x00);
 }
 
-// ‚ключает Page mode - 1024 страниц
+// Р’РєР»СЋС‡Р°РµС‚ Page mode - 1024 СЃС‚СЂР°РЅРёС†
 // EN: Page mode On - 1024 pages
 void ext_sram_set_page_mode(void)
 {
    ext_sram_status_register_write(0x80);
 }
 
-// ‚ключает Sequential mode - 32 768 байт
+// Р’РєР»СЋС‡Р°РµС‚ Sequential mode - 32 768 Р±Р°Р№С‚
 // EN: Sequential mode On - 32 768 bytes
 void ext_sram_set_sequential_mode(void)
 {
    ext_sram_status_register_write(0xC0);
 }
 
-// —тение 1 байта
+// Р§С‚РµРЅРёРµ 1 Р±Р°Р№С‚Р°
 // EN: 1 byte read
 int8 ext_sram_byte_read_sequence(int16 byte_addr)
 {
@@ -111,7 +111,7 @@ int8 ext_sram_byte_read_sequence(int16 byte_addr)
    return data;
 }
 
-// ‡апись 1 Ѓайта
+// Р—Р°РїРёСЃСЊ 1 Р‘Р°Р№С‚Р°
 // EN: 1 byte write
 void ext_sram_byte_write_sequence(int16 byte_addr, int8 data)
 {
@@ -125,7 +125,7 @@ void ext_sram_byte_write_sequence(int16 byte_addr, int8 data)
    SPI_DESELECT(SPI_CS_SRAM);
 }
 
-// —тение 1 страницы
+// Р§С‚РµРЅРёРµ 1 СЃС‚СЂР°РЅРёС†С‹
 // EN: 1 page read
 void ext_sram_page_read_sequence(int16 page_addr, int8 *data)
 {
@@ -144,7 +144,7 @@ void ext_sram_page_read_sequence(int16 page_addr, int8 *data)
    SPI_DESELECT(SPI_CS_SRAM);
 }
 
-// ‡апись 1 страницы
+// Р—Р°РїРёСЃСЊ 1 СЃС‚СЂР°РЅРёС†С‹
 // EN: 1 page write
 void ext_sram_page_write_sequence(int16 page_addr, int8 *data)
 {
@@ -164,7 +164,7 @@ void ext_sram_page_write_sequence(int16 page_addr, int8 *data)
    SPI_DESELECT(SPI_CS_SRAM);
 }
 
-// —тение X байт
+// Р§С‚РµРЅРёРµ X Р±Р°Р№С‚
 // EN: x bytes read
 void ext_sram_sequential_read_sequence(int16 page_addr, int8 *data, int size)
 {
@@ -183,7 +183,7 @@ void ext_sram_sequential_read_sequence(int16 page_addr, int8 *data, int size)
    SPI_DESELECT(SPI_CS_SRAM);
 }
 
-// ‡апись X байт
+// Р—Р°РїРёСЃСЊ X Р±Р°Р№С‚
 // EN: x bytes write
 void ext_sram_sequential_write_sequence(int16 page_addr, int8 *data, int size)
 {
