@@ -1,8 +1,9 @@
-## Description
+# Description
 Some libs for PIC CCS
 
-# List:
+## List:
+```
 - esp8266 - popular Wi-Fi module
 - 23k256 - SRAM Microchip
-
-![Quantiles chart example](/img/snail.png)
+```
+![Snail logo](/img/snail.png)
