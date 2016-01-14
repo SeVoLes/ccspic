@@ -1,10 +1,9 @@
 /**************************************
-* Description for PIC24FJ64GB004
-* on Snail Universe Board rev 1.0 
+* Description for Snail Universe Board rev 1.0
+* On boars:
 * USB, I2C, SPI, UART, Digital I/O
 * ADC I/O, Leds
-* rev 1.0 - consist chips:
-* MCU - PIC24FJ64GB004
+* MCU     - PIC24FJ64GB004
 * Flash   - at45db0081  - 2pcs
 * SRAM    - 23k256      - 1 pcs
 * Clock   - m41t81      - 1 pcs
