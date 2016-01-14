@@ -7,14 +7,14 @@
 // PIC24 - PinOut, Interfeses, etc.
 #include <desc_pic24fj64gb004.h>
 // Onboard clock
-#include <..\lib\m41t81.c>
+#include <..\m41t81.c>
 // Onboard flash
-#include <..\lib\at45db0081.c>
+#include <..\at45db0081.c>
 // Onboard sram
-#include <..\lib\23k256.c>
+#include <..\23k256.c>
 
 // same functions
-#include <..\lib\snail_functions.c>
+#include <..\snail_functions.c>
 // For working with string
 #include <string.h>
 
