@@ -26,7 +26,7 @@
 // variables fo working (variable declaration in wifi_esp.c)
 extern int esp_status; // number of step (see wifi_esp.c)
 extern int esp_write_index; // position in recive buffer
-extern int esp_response_flag; // 
+extern int esp_response_flag; // for waiting respons of ESP
 extern char ESP8266Buf[ESP8266BUFFER_LENGHT]; // Buffer for ESP answer
 
 // Other functions
@@ -38,7 +38,7 @@ void int_timer1_task(void) {
    esp_response_flag++;
 }
 
-// UART inrerrupts
+// UART interrupts
 #int_RDA
 void  RDA_isr(void) 
 {
@@ -48,42 +48,39 @@ void  RDA_isr(void)
    // end of string fo using buffer in string functions
    ESP8266Buf[esp_write_index]='\0';
 
+   // error - buffer overflow
    if (esp_write_index>ESP8266BUFFER_LENGHT-3)
    {
       esp_status = 0;
-      printf(usb_cdc_putc, "Over Buff\r\n");
+      printf(usb_cdc_putc, "Command buffer overflow\r\n");
    }
 }
 
 
-// Îñíîâíàÿ ïðîãðàììà
-void main()
+// main programm
+void main(void)
 {
-   // Èíèöèàëèçèðóì æåëåçî
+   // Hardware initialization
    HW_init();
+   // setup interrupts
+   setup_timer1(TMR_INTERNAL|TMR_DIV_BY_256);   
    
-   setup_timer1(TMR_INTERNAL|TMR_DIV_BY_256);   // setup interrupts
-   //enable_interrupts(INT_TIMER1);
-   //enable_interrupts(int_rda);
-
+   // Command buffer initialization
    init_ESPBuffer();
 
    while(true)
    {
-      // usb
+      // usb for debug
       usb_task();
       
       // wi-fi esp8266
       wifi_task();
       
-      // åñòü ëè ÷òî òî â USB áóôåðå
-      if (usb_cdc_kbhit())
-      {
-         // Ýõî
-         char input_cdc_usb = usb_cdc_getc();
-         usb_cdc_echo(input_cdc_usb);
-
-      }//if (usb_cdc_kbhit())
+      /*******************************
+      * *****************************
+      * User code must be situated here!
+      * *****************************
+      *******************************/
 
    }//while(true)
 }
