@@ -1,41 +1,51 @@
 /**************************************
+* Testing project for my own board
 * Snail Universe Board rev 1.0
-* Тестовая программа
+* Contact me: voloh@land.ru
 **************************************/
-// Описание и настрока чипа PIC24
+// Same libs for chips on board
+// PIC24 - PinOut, Interfeses, etc.
 #include <desc_pic24fj64gb004.h>
-// Библиотека для работы с внешними часами
-#include <..\LIB\m41t81.c>
-// Библиотека для работы с внешней FLASH памятью
-#include <..\LIB\at45db0081.c>
-// Библиотека для работы с внешний SRAM памятью
-#include <..\LIB\23k256.c>
-// Функции необходимые для работы
-#include <..\LIB\snail_functions.c>
-// Работа со строками
+// Onboard clock
+#include <..\lib\m41t81.c>
+// Onboard flash
+#include <..\lib\at45db0081.c>
+// Onboard sram
+#include <..\lib\23k256.c>
+
+// same functions
+#include <..\lib\snail_functions.c>
+// For working with string
 #include <string.h>
-// библмотека для Wi-Fi модуля
+
+// ESP8266 Wi-Fi library
+// Name of stream of UART to ESP
 #define WIFI_DATA_STREAM USART1
-
+// libs
 #include <wifi_esp.c>
-extern int esp_status;
-extern int esp_write_index;
-extern int esp_response_flag;
-extern char ESP8266Buf[ESP8266BUFFER_LENGHT];
+// variables fo working (variable declaration in wifi_esp.c)
+extern int esp_status; // number of step (see wifi_esp.c)
+extern int esp_write_index; // position in recive buffer
+extern int esp_response_flag; // 
+extern char ESP8266Buf[ESP8266BUFFER_LENGHT]; // Buffer for ESP answer
 
-// Другие функции
+// Other functions
 #include <functions.c>
 
-#INT_TIMER1 // 260 ms - 1 /32 MHz *2 *0xFFFF (счетчик) * div
+// use for incriment esp_response_flag for waiting respons of ESP
+#INT_TIMER1
 void int_timer1_task(void) {
    esp_response_flag++;
 }
 
+// UART inrerrupts
 #int_RDA
 void  RDA_isr(void) 
 {
+   // get a char
    ESP8266Buf[esp_write_index] = fgetc(WIFI_DATA_STREAM);
    esp_write_index++;
+   // end of string fo using buffer in string functions
    ESP8266Buf[esp_write_index]='\0';
 
    if (esp_write_index>ESP8266BUFFER_LENGHT-3)
@@ -46,10 +56,10 @@ void  RDA_isr(void)
 }
 
 
-// Основная программа
+// ГЋГ±Г­Г®ГўГ­Г Гї ГЇГ°Г®ГЈГ°Г Г¬Г¬Г 
 void main()
 {
-   // Инициализирум железо
+   // Г€Г­ГЁГ¶ГЁГ Г«ГЁГ§ГЁГ°ГіГ¬ Г¦ГҐГ«ГҐГ§Г®
    HW_init();
    
    setup_timer1(TMR_INTERNAL|TMR_DIV_BY_256);   // setup interrupts
@@ -66,10 +76,10 @@ void main()
       // wi-fi esp8266
       wifi_task();
       
-      // есть ли что то в USB буфере
+      // ГҐГ±ГІГј Г«ГЁ Г·ГІГ® ГІГ® Гў USB ГЎГіГґГҐГ°ГҐ
       if (usb_cdc_kbhit())
       {
-         // Эхо
+         // ГќГµГ®
          char input_cdc_usb = usb_cdc_getc();
          usb_cdc_echo(input_cdc_usb);
 
