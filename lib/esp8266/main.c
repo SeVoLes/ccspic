@@ -29,9 +29,6 @@ extern int esp_write_index; // position in recive buffer
 extern int esp_response_flag; // for waiting respons of ESP
 extern char ESP8266Buf[ESP8266BUFFER_LENGHT]; // Buffer for ESP answer
 
-// Other functions
-#include <functions.c>
-
 // use for incriment esp_response_flag for waiting respons of ESP
 #INT_TIMER1
 void int_timer1_task(void) {
