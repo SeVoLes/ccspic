@@ -3,6 +3,11 @@
 * on Snail Universe Board rev 1.0 
 * USB, I2C, SPI, UART, Digital I/O
 * ADC I/O, Leds
+* rev 1.0 - consist chips:
+* MCU - PIC24FJ64GB004
+* Flash   - at45db0081  - 2pcs
+* SRAM    - 23k256      - 1 pcs
+* Clock   - m41t81      - 1 pcs
 **************************************/
 // select chip
 #include <24FJ64GB004.h>
@@ -36,9 +41,9 @@
 #pin_select SCK1OUT = PIN_C6
 #use SPI(FORCE_HW, SPI1, BITS=16)
 // Chip selects
-#define SPI_CS_FLASH_1 PIN_C3 // Ôëåø 1
-#define SPI_CS_FLASH_2 PIN_C4 // Ôëåø 2
-#define SPI_CS_SRAM PIN_C5    // Ôðàì
+#define SPI_CS_FLASH_1 PIN_C3 // Flash 1
+#define SPI_CS_FLASH_2 PIN_C4 // Flash 2
+#define SPI_CS_SRAM PIN_C5    // SRAM
 #define SPI_SELECT(x) output_low(x)
 #define SPI_DESELECT(x) output_high(x)
 // SPI modes
