@@ -1,10 +1,18 @@
+/********************************
+ *  Librari for pic CCS
+ *  ESP8266 - Wi-Fi module
+ *  Initialization module in the background
+ *  It need timer1 and RDA interrupts for working - see main.c
+ *  Contact me: voloh@land.ru
+ ********************************/
+ 
 char Network_User_Pass[] = "\"Voloh\\'s network\",\"volohkrut\"";
 char site_url[] = "192.168.13.42";
 char url_host[] = "192.168.13.31";
 char page[] = "/snail_stat/index.php";
 char data[] = "time=2015-11-10&data=Preved";
 
-// Переменная статуса работы с модулем
+// ГЏГҐГ°ГҐГ¬ГҐГ­Г­Г Гї Г±ГІГ ГІГіГ±Г  Г°Г ГЎГ®ГІГ» Г± Г¬Г®Г¤ГіГ«ГҐГ¬
 #define ESP8266BUFFER_LENGHT 256
 int esp_status = 0;
 int esp_write_index = 0;
@@ -12,7 +20,7 @@ int esp_response_flag = 0;
 char ESP8266Buf[ESP8266BUFFER_LENGHT];
 
 
-// Отправка GET запроса
+// Send GEP request
 void wifi_send_GET_request(*ptr_host,*ptr_page,*ptr_data)
 {
    fprintf(WIFI_DATA_STREAM,"GET %s?%s HTTP/1.1\r\n",ptr_page,ptr_data);//16
@@ -21,9 +29,10 @@ void wifi_send_GET_request(*ptr_host,*ptr_page,*ptr_data)
    fputs("Content-Type: text/html\r\n",WIFI_DATA_STREAM);//25
    fputs("Content-Length: 0\r\n\r\n\r\n",WIFI_DATA_STREAM);//23
    // total len minus data, host, page - 85
+   // it need for wifi_send_data_GET_len()
 }
 
-// Подсчет длины GET сообщения
+// calculation of length of request
 int wifi_send_data_GET_len(*ptr_host,*ptr_page,*ptr_data)
 {
    int host_len = strlen(ptr_host);
@@ -33,7 +42,7 @@ int wifi_send_data_GET_len(*ptr_host,*ptr_page,*ptr_data)
    return host_len + page_len + data_len + 85;
 }
 
-//
+// Initialization recive buffer
 void init_ESPBuffer(void)
 {
    int i;
@@ -45,13 +54,14 @@ void init_ESPBuffer(void)
    esp_write_index = 0;
    ESP8266Buf[ESP8266BUFFER_LENGHT-1]='\0';
 }
-// очистка буфера приема
+// Clear of buffer
 void Clear_ESPBuffer(void)
 {
    ESP8266Buf[0]='\0';
    esp_write_index=0;
 }
-// Вклчение таймаута на прием
+
+// background waiting mode on
 void wifi_wait_on(void)
 {
    Clear_ESPBuffer();
@@ -60,7 +70,7 @@ void wifi_wait_on(void)
    enable_interrupts(int_rda);
    esp_response_flag=0;
 }
-// Выключение таймаута
+// background waiting mode off
 void wifi_wait_off(void)
 {
    disable_interrupts(INT_TIMER1);
@@ -68,88 +78,102 @@ void wifi_wait_off(void)
    esp_response_flag=0;
 }
 
+// task for ESP
 void wifi_task(void)
 {
+   // errors count
    static int errors_count;
-   // для обработки ответов от модуля
+   // Temp string
    char temp_string[10];
    
+   // step by step working
    switch(esp_status)
    {
-      case 0: // Исходная точка
-      // Добавить сетчик АТ без OK и хард ресет
-      // сбросим счетчик ошибок
+      case 0: // Start to work
+         // Send AT
          errors_count = 0;
          wifi_wait_on();
-         // Жив ли модуль? AT
+         // Are you reade ESP? AT
          fputs("AT\r\n",WIFI_DATA_STREAM);
+         // debug
          printf(usb_cdc_putc, "Snail - AT\r\n");
+         // next step
          esp_status = 1;
       break;
         
-      case 1: // статус что мы отправили AT
+      case 1: // Waiting OK
          if (esp_response_flag>2)
          {
             wifi_wait_off();
             strcpy(temp_string,"OK");
             if (strstr(ESP8266Buf,temp_string) != NULL)
             {
+               // next step
                esp_status = 2;
+               // debug
                printf(usb_cdc_putc, "Module - OK\r\n");
             }
             else
             {
+               // to start
                esp_status = 0;
                printf(usb_cdc_putc, "Module - NOT OK\r\n");
-               //printf(usb_cdc_putc, "Buffer c - %s;\r\ntmp - %s\r\n",ESP8266Buf,temp_string);
             }//if (strstr(ESP8266Buf,TempStr) != NULL)
 
          }//if (esp_response_flag>2)   
       break;
          
-      case 2: // Получили OK на AT
+      case 2: // Get mode of ESP
          wifi_wait_on();
-         // Проверка нужного режима работы
+         // Send command
          fputs("AT+CWMODE?\r\n",WIFI_DATA_STREAM);
+         // debug
          printf(usb_cdc_putc, "Snail - AT+CWMODE?\r\n");
+         // next step
          esp_status = 3;
       break;
-      // Узнаем режим работы модуля 1 - то то нужно
-      case 3: // Отправили запрос на режим работы модуля
+      
+      case 3: // We need mode 1 
          if (esp_response_flag>2)
          {
             wifi_wait_off();
             strcpy(temp_string,"+CWMODE:1");
             if (strstr(ESP8266Buf,temp_string) != NULL)
             {
-                esp_status = 4;
-                printf(usb_cdc_putc, "Module - MODE = 1\r\n");
+               // next step
+               esp_status = 4;
+               // debug
+               printf(usb_cdc_putc, "Module - MODE = 1\r\n");
             }
             else
             {
-               printf(usb_cdc_putc, "Buffer c - %s ; tmp - %s\r\n",ESP8266Buf,temp_string);
+               // change mode to mode 1
                fputs("AT+CWMODE=1\r\n",WIFI_DATA_STREAM);
+               // debug
                printf(usb_cdc_putc, "AT+CWMODE=1\r\n");
+               // restart module
                fputs("AT+RST\r\n",WIFI_DATA_STREAM);
+               // debug
                printf(usb_cdc_putc, "AT+RST\r\n");
+               // to start
                esp_status = 0;
             }//if (strstr(ESP8266Buf,temp_string) != NULL)
          }//if (esp_response_flag==1)     
         break;
         
-        case 4: // Попробуем подключиться к точке доступа
+        case 4: // ГЏГ®ГЇГ°Г®ГЎГіГҐГ¬ ГЇГ®Г¤ГЄГ«ГѕГ·ГЁГІГјГ±Гї ГЄ ГІГ®Г·ГЄГҐ Г¤Г®Г±ГІГіГЇГ 
             wifi_wait_on();
             fprintf(WIFI_DATA_STREAM,"AT+CWJAP=%s\r\n",Network_User_Pass);
             printf(usb_cdc_putc, "Snail - AT+CWJAP=%s\r\n",Network_User_Pass);
             esp_status = 5;
         break;
         
-        case 5: // Получилось подключитсья?
+        case 5: // ГЏГ®Г«ГіГ·ГЁГ«Г®Г±Гј ГЇГ®Г¤ГЄГ«ГѕГ·ГЁГІГ±ГјГї?
             if (esp_response_flag>5)
             {
                wifi_wait_off();
                strcpy(temp_string,"OK");
-               if (strstr(ESP8266Buf,temp_string) != NULL) // Да, получилось
+               if (strstr(ESP8266Buf,temp_string) != NULL) // Г„Г , ГЇГ®Г«ГіГ·ГЁГ«Г®Г±Гј
                {
                   printf(usb_cdc_putc, "Module - connect to %s\r\n", Network_User_Pass);
                   esp_status = 6;
@@ -163,16 +187,16 @@ void wifi_task(void)
                   }
 
                   printf(usb_cdc_putc, "Module - NOT connected to %s\r\n", Network_User_Pass);
-                  // посчитаем количество попток
+                  // ГЇГ®Г±Г·ГЁГІГ ГҐГ¬ ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГЇГ®ГЇГІГ®ГЄ
                   errors_count++;
                   if (errors_count>10)
                   {
-                     esp_status = 0; // Попробуем еще раз
+                     esp_status = 0; // ГЏГ®ГЇГ°Г®ГЎГіГҐГ¬ ГҐГ№ГҐ Г°Г Г§
                      errors_count = 0;
                   }
                   else
                   {
-                     esp_status = 4; // Попробуем еще раз
+                     esp_status = 4; // ГЏГ®ГЇГ°Г®ГЎГіГҐГ¬ ГҐГ№ГҐ Г°Г Г§
                   }// if (errors_count>10)
                   
                }//if (strstr(ESP8266Buf,temp_string) != NULL)
@@ -180,15 +204,15 @@ void wifi_task(void)
             }//if (esp_response_flag>2)
          break;
          
-         case 6: // Отправим команду, что бы узнать IP адрес полученный по DHCP
+         case 6: // ГЋГІГЇГ°Г ГўГЁГ¬ ГЄГ®Г¬Г Г­Г¤Гі, Г·ГІГ® ГЎГ» ГіГ§Г­Г ГІГј IP Г Г¤Г°ГҐГ± ГЇГ®Г«ГіГ·ГҐГ­Г­Г»Г© ГЇГ® DHCP
             wifi_wait_on();
             fputs("AT+CIFSR\r\n",WIFI_DATA_STREAM);
             printf(usb_cdc_putc, "Snail - AT+CIFSR\r\n");
             esp_status = 7;
          break;
          
-         case 7: // Узнаем IP адрес
-            if (esp_response_flag>5)// Подождем дольше чем обычно
+         case 7: // Г“Г§Г­Г ГҐГ¬ IP Г Г¤Г°ГҐГ±
+            if (esp_response_flag>5)// ГЏГ®Г¤Г®Г¦Г¤ГҐГ¬ Г¤Г®Г«ГјГёГҐ Г·ГҐГ¬ Г®ГЎГ»Г·Г­Г®
             {
                wifi_wait_off(); 
                strcpy(temp_string,"ERROR");
@@ -201,16 +225,16 @@ void wifi_task(void)
                {
                    printf(usb_cdc_putc, "Module - IP = ERROR - %s\r\n",ESP8266Buf);
                    
-                   // посчитаем количество попток
+                   // ГЇГ®Г±Г·ГЁГІГ ГҐГ¬ ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГЇГ®ГЇГІГ®ГЄ
                   errors_count++;
                   if (errors_count>10)
                   {
-                     esp_status = 0; // Попробуем еще раз
+                     esp_status = 0; // ГЏГ®ГЇГ°Г®ГЎГіГҐГ¬ ГҐГ№ГҐ Г°Г Г§
                      errors_count = 0;
                   }
                   else
                   {
-                     esp_status = 6; // Попробуем еще раз
+                     esp_status = 6; // ГЏГ®ГЇГ°Г®ГЎГіГҐГ¬ ГҐГ№ГҐ Г°Г Г§
                   }// if (errors_count>10)
 
                }// if (strstr(ESP8266Buf,temp_string) == NULL)
@@ -224,8 +248,8 @@ void wifi_task(void)
             esp_status = 9;
          break;
          
-         case 9: // Подключимся к сайту
-            if (esp_response_flag>5)// Подождем дольше чем обычно
+         case 9: // ГЏГ®Г¤ГЄГ«ГѕГ·ГЁГ¬Г±Гї ГЄ Г±Г Г©ГІГі
+            if (esp_response_flag>5)// ГЏГ®Г¤Г®Г¦Г¤ГҐГ¬ Г¤Г®Г«ГјГёГҐ Г·ГҐГ¬ Г®ГЎГ»Г·Г­Г®
             {
                wifi_wait_off(); 
                strcpy(temp_string,"CONNECT");
@@ -237,23 +261,23 @@ void wifi_task(void)
                else
                {
                    printf(usb_cdc_putc, "Module - NOT TCP connected to %s\r\n",url_host);
-                   // посчитаем количество попток
+                   // ГЇГ®Г±Г·ГЁГІГ ГҐГ¬ ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® ГЇГ®ГЇГІГ®ГЄ
                   errors_count++;
                   if (errors_count>10)
                   {
-                     esp_status = 0; // Начнем все с начала
+                     esp_status = 0; // ГЌГ Г·Г­ГҐГ¬ ГўГ±ГҐ Г± Г­Г Г·Г Г«Г 
                      errors_count = 0;
                   }
                   else
                   {
-                     esp_status = 8; // Попробуем еще раз
+                     esp_status = 8; // ГЏГ®ГЇГ°Г®ГЎГіГҐГ¬ ГҐГ№ГҐ Г°Г Г§
                   }// if (errors_count>10)
 
                }// if (strstr(ESP8266Buf,temp_string) != NULL)
             }// if (esp_response_flag>5)   
          break;
          
-         case 10: // отправка данных
+         case 10: // Г®ГІГЇГ°Г ГўГЄГ  Г¤Г Г­Г­Г»Гµ
             wifi_wait_on();
             //int data_len = strlen(data_get_string);
             int data_len = wifi_send_data_GET_len(url_host,page,data);
@@ -277,13 +301,13 @@ void wifi_task(void)
                else
                {
                    printf(usb_cdc_putc, "Module - NOT >\r\n");
-                   esp_status = 8;// попробуем еще раз
+                   esp_status = 8;// ГЇГ®ГЇГ°Г®ГЎГіГҐГ¬ ГҐГ№ГҐ Г°Г Г§
                }// if (strstr(ESP8266Buf,temp_string) != NULL)
             }// if (esp_response_flag>1)  
          break;
          
          case 12:
-            // Ничего не делать
+            // ГЌГЁГ·ГҐГЈГ® Г­ГҐ Г¤ГҐГ«Г ГІГј
          break;
    }//switch(esp_status)
    
