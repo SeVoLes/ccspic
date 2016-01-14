@@ -161,42 +161,47 @@ void wifi_task(void)
          }//if (esp_response_flag==1)     
         break;
         
-        case 4: // Ïîïðîáóåì ïîäêëþ÷èòüñÿ ê òî÷êå äîñòóïà
+        case 4: // Connect to Wi-Fi router
             wifi_wait_on();
             fprintf(WIFI_DATA_STREAM,"AT+CWJAP=%s\r\n",Network_User_Pass);
+            // debug
             printf(usb_cdc_putc, "Snail - AT+CWJAP=%s\r\n",Network_User_Pass);
+            // next step
             esp_status = 5;
         break;
         
-        case 5: // Ïîëó÷èëîñü ïîäêëþ÷èòñüÿ?
+        case 5: // OK?
             if (esp_response_flag>5)
             {
                wifi_wait_off();
                strcpy(temp_string,"OK");
-               if (strstr(ESP8266Buf,temp_string) != NULL) // Äà, ïîëó÷èëîñü
+               if (strstr(ESP8266Buf,temp_string) != NULL) // OK
                {
-                  printf(usb_cdc_putc, "Module - connect to %s\r\n", Network_User_Pass);
-                  esp_status = 6;
+                 // debug
+                 printf(usb_cdc_putc, "Module - connect to %s\r\n", Network_User_Pass);
+                 // next step
+                 esp_status = 6;
                }
                else
                {
                   strcpy(temp_string,"ERROR");
                   if (strstr(ESP8266Buf,temp_string) != NULL) // ERROR
                   {
+                    // debug
                      printf(usb_cdc_putc, "Module - ERROR connect to %s - %s\r\n", Network_User_Pass,ESP8266Buf);
                   }
-
+                  // debug
                   printf(usb_cdc_putc, "Module - NOT connected to %s\r\n", Network_User_Pass);
-                  // ïîñ÷èòàåì êîëè÷åñòâî ïîïòîê
+                  // Try again
                   errors_count++;
                   if (errors_count>10)
                   {
-                     esp_status = 0; // Ïîïðîáóåì åùå ðàç
+                     esp_status = 0; // to start
                      errors_count = 0;
                   }
                   else
                   {
-                     esp_status = 4; // Ïîïðîáóåì åùå ðàç
+                     esp_status = 4; // return by 1 step
                   }// if (errors_count>10)
                   
                }//if (strstr(ESP8266Buf,temp_string) != NULL)
@@ -204,73 +209,83 @@ void wifi_task(void)
             }//if (esp_response_flag>2)
          break;
          
-         case 6: // Îòïðàâèì êîìàíäó, ÷òî áû óçíàòü IP àäðåñ ïîëó÷åííûé ïî DHCP
+         case 6: // IP by DHCP
             wifi_wait_on();
             fputs("AT+CIFSR\r\n",WIFI_DATA_STREAM);
+            // debug
             printf(usb_cdc_putc, "Snail - AT+CIFSR\r\n");
+            // next step
             esp_status = 7;
          break;
          
-         case 7: // Óçíàåì IP àäðåñ
-            if (esp_response_flag>5)// Ïîäîæäåì äîëüøå ÷åì îáû÷íî
+         case 7: // get IP ?
+            if (esp_response_flag>5)
             {
                wifi_wait_off(); 
                strcpy(temp_string,"ERROR");
-               if (strstr(ESP8266Buf,temp_string) == NULL)
+               if (strstr(ESP8266Buf,temp_string) == NULL)// IP is get
                {
+                   // debug
                    printf(usb_cdc_putc, "Module - IP = %s\r\n",ESP8266Buf);
+                   // next step
                    esp_status = 8;
                }
                else
                {
+                   // debug
                    printf(usb_cdc_putc, "Module - IP = ERROR - %s\r\n",ESP8266Buf);
                    
-                   // ïîñ÷èòàåì êîëè÷åñòâî ïîïòîê
+                   // error count
                   errors_count++;
                   if (errors_count>10)
                   {
-                     esp_status = 0; // Ïîïðîáóåì åùå ðàç
+                     esp_status = 0; // to start
                      errors_count = 0;
                   }
                   else
                   {
-                     esp_status = 6; // Ïîïðîáóåì åùå ðàç
+                     esp_status = 6; // Try again
                   }// if (errors_count>10)
 
                }// if (strstr(ESP8266Buf,temp_string) == NULL)
             }// if (esp_response_flag>5)   
          break;
          
-         case 8: //
+         case 8: // connect to host
             wifi_wait_on();
             fprintf(WIFI_DATA_STREAM,"AT+CIPSTART=\"TCP\",\"%s\",80\r\n",url_host);
+            // debug
             printf(usb_cdc_putc, "Snail - AT+CIPSTART=\"TCP\",\"%s\",80\r\n",url_host);
+            // next step
             esp_status = 9;
          break;
          
-         case 9: // Ïîäêëþ÷èìñÿ ê ñàéòó
-            if (esp_response_flag>5)// Ïîäîæäåì äîëüøå ÷åì îáû÷íî
+         case 9: // Cinnected?
+            if (esp_response_flag>5)
             {
                wifi_wait_off(); 
                strcpy(temp_string,"CONNECT");
-               if (strstr(ESP8266Buf,temp_string) != NULL)
+               if (strstr(ESP8266Buf,temp_string) != NULL) // Connected
                {
+                   // debug
                    printf(usb_cdc_putc, "Module - TCP connected to %s\r\n",url_host);
+                   // next step
                    esp_status = 10;
                }
                else
                {
+                   // Not connected
                    printf(usb_cdc_putc, "Module - NOT TCP connected to %s\r\n",url_host);
-                   // ïîñ÷èòàåì êîëè÷åñòâî ïîïòîê
+                   // try again
                   errors_count++;
                   if (errors_count>10)
                   {
-                     esp_status = 0; // Íà÷íåì âñå ñ íà÷àëà
+                     esp_status = 0; // to start
                      errors_count = 0;
                   }
                   else
                   {
-                     esp_status = 8; // Ïîïðîáóåì åùå ðàç
+                     esp_status = 8; // try again
                   }// if (errors_count>10)
 
                }// if (strstr(ESP8266Buf,temp_string) != NULL)
@@ -279,7 +294,7 @@ void wifi_task(void)
          
          case 10: // îòïðàâêà äàííûõ
             wifi_wait_on();
-            //int data_len = strlen(data_get_string);
+
             int data_len = wifi_send_data_GET_len(url_host,page,data);
             fprintf(WIFI_DATA_STREAM,"AT+CIPSEND=%d\r\n",data_len);
             //fputs("AT+CIPSEND=100\r\n",WIFI_DATA_STREAM);
