@@ -1,0 +1,10 @@
+θών 10, 2016 3:40:03 PM owl_communication.gui <init>
+INFO: Programm start
+θών 10, 2016 3:40:03 PM owl_communication.gui <init>
+INFO: Load connection parameters
+θών 10, 2016 3:40:10 PM owl_communication.gui$updateHex actionPerformed
+INFO: Serial port initialized - COM13
+θών 10, 2016 3:40:10 PM owl_communication.gui$updateHex actionPerformed
+INFO: XOFF - ERROR
+θών 10, 2016 3:40:19 PM owl_communication.gui$3 windowClosing
+INFO: Save parameters and programm stop

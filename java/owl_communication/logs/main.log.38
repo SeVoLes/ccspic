@@ -1,0 +1,12 @@
+θών 10, 2016 3:41:41 PM owl_communication.gui <init>
+INFO: Programm start
+θών 10, 2016 3:41:41 PM owl_communication.gui <init>
+INFO: Load connection parameters
+θών 10, 2016 3:41:43 PM owl_communication.gui$openHexFile actionPerformed
+INFO: Load hex file - C:\Users\Zverek-2\YandexDisk\SNAIL\CCS_CODE\OWL\test\test.hex
+θών 10, 2016 3:41:50 PM owl_communication.gui$updateHex actionPerformed
+INFO: Serial port initialized - COM13
+θών 10, 2016 3:41:50 PM owl_communication.gui$updateHex actionPerformed
+INFO: XOFF - ERROR
+θών 10, 2016 3:41:52 PM owl_communication.gui$3 windowClosing
+INFO: Save parameters and programm stop
