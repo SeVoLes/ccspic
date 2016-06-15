@@ -73,7 +73,7 @@ public class gui extends Frame {
 	   private String hexFileName,hexFilePath;
 	   private Logger logger;
 	   
-	   private int serialWaitTime = 500; // millis
+	   private int serialWaitTime = 40; // millis
 	   
 	   private TextArea logtext;
 	   
@@ -459,6 +459,7 @@ class updateHex implements ActionListener {
 		comPort.openPort();
 		comPort.setBaudRate(serialSpeed);
 
+		comPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING, serialWaitTime, 0);
 		logtext.setText("");
 		
 		if(comPort.isOpen())
@@ -499,12 +500,13 @@ class updateHex implements ActionListener {
 					comPort.writeBytes(biteLine,line.length());
 
 					long startTime = System.currentTimeMillis(); //fetch starting time
-					while( (comPort.bytesAvailable()<3) | ((System.currentTimeMillis()-startTime)<serialWaitTime) )
+					while((System.currentTimeMillis()-startTime)<serialWaitTime )
+					//	while( (comPort.bytesAvailable()<3) || ((System.currentTimeMillis()-startTime)<serialWaitTime) )
 					{
 						// Please wait...
 					}
 					
-					if ((System.currentTimeMillis()-startTime)>serialWaitTime)
+					if (comPort.bytesAvailable()<3)
 					{
 						System.out.println("Port not answer");
 						logtext.setText("Port not answer");
@@ -512,6 +514,7 @@ class updateHex implements ActionListener {
 						break;
 					}
 					
+	
 					byte[] newData = new byte[comPort.bytesAvailable()];
 
 					comPort.readBytes(newData, comPort.bytesAvailable());
@@ -583,6 +586,8 @@ class updateHex implements ActionListener {
 		comPort.closePort();
 		logtext.setText("Complete");
 	}
+					
+					
 }
 
 
